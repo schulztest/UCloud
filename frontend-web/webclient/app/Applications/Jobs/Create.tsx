@@ -103,6 +103,19 @@ export const Create: React.FunctionComponent = () => {
 
     const application = applicationResp.data;
 
+    React.useEffect(() => {
+        console.log(provider);
+        if (provider) {
+            // Folder resources:
+            folders.params.forEach(it => {
+                console.log(document.getElementById(`app-parameter${it.name}`)?.getAttribute("data-provider"));
+            });
+
+            application?.invocation.parameters
+            // Look for folder-resources and input fields. Both need to match provider
+        }
+    }, [provider, application]);
+
     const onLoadParameters = useCallback((importedJob: Partial<JobSpecification>) => {
         if (application == null) return;
         jobBeingLoaded.current = null;

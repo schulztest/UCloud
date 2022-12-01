@@ -387,7 +387,6 @@ export const ArchiveSingleProject: React.FC<ArchiveSingleProjectProps> = props =
                     <Button
                         color={"orange"}
                         onClick={() => {
-                            const operation = props.isArchived ? ProjectAPI.unarchive : ProjectAPI.archive;
                             addStandardDialog({
                                 title: "Are you sure?",
                                 message: `Are you sure you wish to ` +

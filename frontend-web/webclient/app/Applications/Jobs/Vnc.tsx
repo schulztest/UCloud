@@ -20,7 +20,7 @@ interface ConnectionDetails {
     password?: string
 }
 
-export const Vnc: React.FunctionComponent = () => {
+const Vnc: React.FunctionComponent = () => {
     const params = useParams<{jobId: string, rank: string}>();
     const jobId = params.jobId!;
     const rank = params.rank!

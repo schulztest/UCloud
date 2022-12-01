@@ -32,7 +32,7 @@ export type FlexCProps =
 
 
 const Flex = styled.div<FlexCProps>`
-  ${cursor}
+  ${cursor};
   display: flex;
   ${space} ${width} ${minWidth} ${maxWidth} ${height} ${zIndex}
   ${color} ${alignItems} ${justifyContent}

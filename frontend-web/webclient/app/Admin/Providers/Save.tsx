@@ -77,7 +77,7 @@ function Save(): JSX.Element | null {
                     id="ID"
                     placeholder="ID..."
                     required
-                    disabled={provider.data ? true : false}
+                    disabled={!!provider.data}
                     styling={{}}
                     defaultValue={provider.data?.specification.id}
                 />

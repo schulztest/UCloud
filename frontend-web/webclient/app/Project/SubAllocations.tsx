@@ -477,8 +477,8 @@ function NewRecipients({wallets, ...props}: {wallets: Wallet[]; reload(): void;}
 }
 
 function flexRequiresMoreSpace(type: ProductType): boolean {
-    if (["NETWORK_IP", "INGRESS", "LICENSE"].includes(type)) return true;
-    return false;
+    return ["NETWORK_IP", "INGRESS", "LICENSE"].includes(type);
+
 }
 
 function labelSpace(wallet?: {productType: ProductType, unit: ProductPriceUnit}): string {

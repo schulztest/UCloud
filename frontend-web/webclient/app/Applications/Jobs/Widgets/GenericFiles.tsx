@@ -13,6 +13,7 @@ import {api as FilesApi} from "@/UCloud/FilesApi";
 import {prettyFilePath} from "@/Files/FilePath";
 import {BrowseType} from "@/Resource/BrowseType";
 import {FolderResourceNS} from "../Resources";
+import {getProviderField} from "../Resources/Ingress";
 
 type GenericFileParam =
     UCloud.compute.ApplicationParameterNS.InputFile |
@@ -52,10 +53,14 @@ export const FilesParameter: React.FunctionComponent<FilesProps> = props => {
 
     const onActivate = useCallback(() => {
         const pathRef = {current: ""};
+        const provider = getProviderField();
         dialogStore.addDialog(
             <FilesBrowse
                 browseType={BrowseType.Embedded}
                 pathRef={pathRef}
+                additionalFilters={{
+                    filterProvider: provider
+                }}
                 onSelectRestriction={file =>
                     (isDirectoryInput && file.status.type === "DIRECTORY") ||
                     (!isDirectoryInput && file.status.type === "FILE")
@@ -63,6 +68,7 @@ export const FilesParameter: React.FunctionComponent<FilesProps> = props => {
                 onSelect={async (res) => {
                     const target = removeTrailingSlash(res.id === "" ? pathRef.current : res.id);
                     FilesSetter(props.parameter, {path: target, readOnly: false, type: "file"});
+                    FileSetProvider(props.parameter, res.specification.product.provider);
                     dialogStore.success();
                     if (anyFolderDuplicates()) {
                         props.setWarning?.("Duplicate folders selected. This is not always supported.");
@@ -90,6 +96,15 @@ export const FilesParameter: React.FunctionComponent<FilesProps> = props => {
 const FileSelectorInput = styled(Input)`
     cursor: pointer;
 `;
+
+function FileSetProvider(param: {name: string}, provider: string): void {
+    console.log(param.name);
+    const elem = findElement(param);
+    if (elem) {
+        console.log(`Setting provider = ${provider}`);
+        elem.setAttribute("data-provider", provider);
+    }
+}
 
 export const FilesValidator: WidgetValidator = (param) => {
     if (param.type === "input_directory" || param.type === "input_file") {

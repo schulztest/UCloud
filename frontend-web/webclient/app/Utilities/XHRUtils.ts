@@ -1,4 +1,4 @@
-// Remove?
+// Note(Jonas): Remove?
 const HTTP_STATUS_CODES: Record<number, string> = {
     100: "Continue",
     101: "Switching Protocols",

@@ -390,6 +390,7 @@ export class HttpClient {
         return tokenPromise;
     }
 
+    /* Unused */
     public createOneTimeTokenWithPermission(permission): Promise<any> {
         return this.receiveAccessTokenOrRefreshIt()
             .then(token => {
