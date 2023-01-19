@@ -24,6 +24,16 @@ object FaultInjections : CallDescriptionContainer("fault_injection") {
     }
 }
 
+enum class FaultSystem {
+    Rpc,
+    SqlDatabase,
+    DistributedLocks,
+    EventStream,
+    Kubernetes,
+    FileSystem,
+    Slurm,
+}
+
 @Serializable
 @UCloudApiInternal(InternalLevel.BETA)
 data class InjectedFault(
@@ -205,9 +215,12 @@ data class BooleanComparison(
 @Serializable
 @UCloudApiInternal(InternalLevel.BETA)
 sealed class Fault {
+    abstract val system: FaultSystem
+
     object Rpc {
         @Serializable
         data class Delay(val duration: Long) : Fault() {
+            override val system = FaultSystem.Rpc
             init {
                 require(duration >= 0)
             }
@@ -221,6 +234,7 @@ sealed class Fault {
             val payloadIsBase64: Boolean = false,
             val responseTime: Long = 10,
         ) : Fault() {
+            override val system = FaultSystem.Rpc
             init {
                 require(statusCode in 100..599)
                 require(responseTime >= 0)
@@ -236,7 +250,9 @@ sealed class Fault {
         }
 
         @Serializable
-        data class Tls(val type: TlsType) : Fault()
+        data class Tls(val type: TlsType) : Fault() {
+            override val system = FaultSystem.Rpc
+        }
 
         enum class TlsType {
             EXPIRED_CERT,
@@ -248,6 +264,7 @@ sealed class Fault {
         data class ConnectionFailure(
             val timeToFailure: Long = 1000,
         ) : Fault() {
+            override val system = FaultSystem.Rpc
             init {
                 require(timeToFailure >= 0)
             }
@@ -257,7 +274,8 @@ sealed class Fault {
         data class ProxyFailure(
             val timeToFailure: Long = 1000,
             val responseCode: Int
-        ) {
+        ) : Fault() {
+            override val system = FaultSystem.Rpc
             init {
                 require(timeToFailure >= 0)
                 require(responseCode in 100..599)
@@ -267,70 +285,96 @@ sealed class Fault {
 
     object SqlDatabase {
         @Serializable
-        data class Delay(val duration: Long) : Fault()
+        data class Delay(val duration: Long) : Fault() {
+            override val system = FaultSystem.SqlDatabase
+        }
 
         @Serializable
         data class Error(
             val errorType: String,
             val errorMessage: String,
-        ) : Fault()
+        ) : Fault() {
+            override val system = FaultSystem.SqlDatabase
+        }
 
         @Serializable
         data class ConnectionFailure(
             val timeToFailure: Long = 1000,
-        ) : Fault()
+        ) : Fault() {
+            override val system = FaultSystem.SqlDatabase
+        }
     }
 
     object DistributedLocks {
         @Serializable
-        data class Delay(val duration: Long) : Fault()
+        data class Delay(val duration: Long) : Fault() {
+            override val system = FaultSystem.DistributedLocks
+        }
 
         @Serializable
         data class Error(
             val errorType: String,
             val errorMessage: String,
-        ) : Fault()
+        ) : Fault() {
+            override val system = FaultSystem.DistributedLocks
+        }
     }
 
     object EventStream {
         @Serializable
-        data class Delay(val duration: Long) : Fault()
+        data class Delay(val duration: Long) : Fault() {
+            override val system = FaultSystem.EventStream
+        }
 
         @Serializable
-        data class DoubleReceive(val timeBetweenReceives: Long) : Fault()
+        data class DoubleReceive(val timeBetweenReceives: Long) : Fault() {
+            override val system = FaultSystem.EventStream
+        }
 
         @Serializable
         data class FailureToSend(
             val errorType: String,
             val errorMessage: String,
-        ) : Fault()
+        ) : Fault() {
+            override val system = FaultSystem.EventStream
+        }
 
         @Serializable
         data class FailureToReceive(
             val errorType: String,
             val errorMessage: String,
-        ) : Fault()
+        ) : Fault() {
+            override val system = FaultSystem.EventStream
+        }
     }
 
     object Kubernetes {
         @Serializable
-        data class Delay(val duration: Long) : Fault()
+        data class Delay(val duration: Long) : Fault() {
+            override val system = FaultSystem.Kubernetes
+        }
 
         @Serializable
         data class Error(
             val errorType: String,
             val errorMessage: String,
-        ) : Fault()
+        ) : Fault() {
+            override val system = FaultSystem.Kubernetes
+        }
 
         @Serializable
         data class ConnectionFailure(
             val timeToFailure: Long = 1000,
-        ) : Fault()
+        ) : Fault() {
+            override val system = FaultSystem.Kubernetes
+        }
 
         @Serializable
         data class ModifyRealResource(
             val updates: List<Update>
-        ) : Fault()
+        ) : Fault() {
+            override val system = FaultSystem.Kubernetes
+        }
 
         @Serializable
         sealed class Update {
@@ -341,34 +385,46 @@ sealed class Fault {
 
     object FileSystem {
         @Serializable
-        data class Delay(val duration: Long) : Fault()
+        data class Delay(val duration: Long) : Fault() {
+            override val system = FaultSystem.FileSystem
+        }
 
         @Serializable
         data class FailureToWrite(
             val errorType: String,
             val errorMessage: String,
-        ) : Fault()
+        ) : Fault() {
+            override val system = FaultSystem.FileSystem
+        }
 
         @Serializable
         data class FailureToRead(
             val errorType: String,
             val errorMessage: String,
-        ) : Fault()
+        ) : Fault() {
+            override val system = FaultSystem.FileSystem
+        }
     }
 
     object Slurm {
         @Serializable
-        data class Delay(val duration: Long) : Fault()
+        data class Delay(val duration: Long) : Fault() {
+            override val system = FaultSystem.Slurm
+        }
 
         @Serializable
         data class Error(
             val errorType: String,
             val errorMessage: String,
-        ) : Fault()
+        ) : Fault() {
+            override val system = FaultSystem.Slurm
+        }
 
         @Serializable
         data class ConnectionFailure(
             val timeToFailure: Long = 1000,
-        ) : Fault()
+        ) : Fault() {
+            override val system = FaultSystem.Slurm
+        }
     }
 }
