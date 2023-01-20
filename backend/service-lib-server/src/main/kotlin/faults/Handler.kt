@@ -28,6 +28,18 @@ class FaultController(private val micro: Micro) : Controller {
         if (didImplement) return@with
         didImplement = true
 
+        FaultInjectionSystem.enabled = true
+
+        implement(FaultInjections.injectFailure) {
+            FaultInjectionSystem.injectFaults(request.items)
+            ok(Unit)
+        }
+
+        implement(FaultInjections.resetFailures) {
+            FaultInjectionSystem.clearFaults()
+            ok(Unit)
+        }
+
         implement(FaultInjections.clearCaches) {
             val db = db ?: dbMutex.withLock {
                 val currentDb = db

@@ -46,13 +46,15 @@ typealias FaultCondition = Conjunction
 @Serializable
 @UCloudApiInternal(InternalLevel.BETA)
 sealed class Term {
-    abstract fun evaluate(valueRetriever: (propertyName: String) -> Any?): Boolean
+    abstract suspend fun evaluate(valueRetriever: suspend (propertyName: String) -> Any?): Boolean
 }
 
 @Serializable
 @UCloudApiInternal(InternalLevel.BETA)
 data class Conjunction(val terms: List<Term>) : Term() {
-    override fun evaluate(valueRetriever: (propertyName: String) -> Any?): Boolean {
+    constructor(vararg terms: Term) : this(listOf(*terms))
+
+    override suspend fun evaluate(valueRetriever: suspend (propertyName: String) -> Any?): Boolean {
         return terms.all { it.evaluate(valueRetriever) }
     }
 }
@@ -60,7 +62,9 @@ data class Conjunction(val terms: List<Term>) : Term() {
 @Serializable
 @UCloudApiInternal(InternalLevel.BETA)
 data class Disjunction(val terms: List<Term>) : Term() {
-    override fun evaluate(valueRetriever: (propertyName: String) -> Any?): Boolean {
+    constructor(vararg terms: Term) : this(listOf(*terms))
+
+    override suspend fun evaluate(valueRetriever: suspend (propertyName: String) -> Any?): Boolean {
         return terms.any { it.evaluate(valueRetriever) }
     }
 }
@@ -68,7 +72,7 @@ data class Disjunction(val terms: List<Term>) : Term() {
 @Serializable
 @UCloudApiInternal(InternalLevel.BETA)
 data class Negate(val term: Term) : Term() {
-    override fun evaluate(valueRetriever: (propertyName: String) -> Any?): Boolean {
+    override suspend fun evaluate(valueRetriever: suspend (propertyName: String) -> Any?): Boolean {
         return !term.evaluate(valueRetriever)
     }
 }
@@ -78,7 +82,7 @@ data class Negate(val term: Term) : Term() {
 sealed class Comparison<V> : Term() {
     abstract val property: String
 
-    override fun evaluate(valueRetriever: (propertyName: String) -> Any?): Boolean {
+    override suspend fun evaluate(valueRetriever: suspend (propertyName: String) -> Any?): Boolean {
         val value = valueRetriever(property)
         if (!canUse(value)) return false
 
@@ -87,7 +91,7 @@ sealed class Comparison<V> : Term() {
     }
 
     abstract fun canUse(value: Any?): Boolean
-    abstract fun evaluateTerm(value: V): Boolean
+    abstract suspend fun evaluateTerm(value: V): Boolean
 }
 
 @Serializable
@@ -119,7 +123,7 @@ data class StringComparison(
 
     override fun canUse(value: Any?): Boolean = value is String
 
-    override fun evaluateTerm(value: String): Boolean {
+    override suspend fun evaluateTerm(value: String): Boolean {
         return when (op) {
             Op.EQUALS -> value == rhs
             Op.EQUALS_IGNORE_CASE -> value.equals(rhs, ignoreCase = true)
@@ -156,7 +160,7 @@ data class IntComparison(
 
     override fun canUse(value: Any?): Boolean = value is Long
 
-    override fun evaluateTerm(value: Long): Boolean {
+    override suspend fun evaluateTerm(value: Long): Boolean {
         return when (op) {
             Op.EQUALS -> value == rhs
             Op.NOT_EQUALS -> value != rhs
@@ -188,7 +192,7 @@ data class FloatComparison(
 
     override fun canUse(value: Any?): Boolean = value is Double
 
-    override fun evaluateTerm(value: Double): Boolean {
+    override suspend fun evaluateTerm(value: Double): Boolean {
         return when (op) {
             Op.EQUALS -> (value - rhs).absoluteValue <= 0.000001
             Op.NOT_EQUALS -> !((value - rhs).absoluteValue <= 0.000001)
@@ -205,7 +209,7 @@ data class BooleanComparison(
     override val property: String,
     val comparisonValue: Boolean
 ) : Comparison<Boolean>() {
-    override fun evaluateTerm(value: Boolean): Boolean {
+    override suspend fun evaluateTerm(value: Boolean): Boolean {
         return value == comparisonValue
     }
 
